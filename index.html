@@ -307,23 +307,22 @@
         
         .exercise-description {
             font-size: 15px;
-    color: #555;
-    line-height: 1.6; /* Giảm line-height */
-    background: #f8f9fa;
-    padding: 12px 15px; /* Giảm padding top-bottom */
-    border-radius: 8px;
-    border-left: 4px solid var(--secondary-color);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    /* QUAN TRỌNG: Xóa mọi khoảng trống */
-    margin: 0;
-    display: block;
-    white-space: pre-line;
-    word-wrap: break-word;
-    /* Reset mọi khoảng trống */
-    text-align: left;
-    text-indent: 0;
+            color: #555;
+            line-height: 1.7;
+            white-space: pre-line;
+            word-wrap: break-word;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .exercise-description.collapsed {
+            max-height: 120px;
+            overflow: hidden;
         }
         
         .exercise-description.collapsed::after {
