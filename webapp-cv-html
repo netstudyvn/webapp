@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ Năng lực Chuyên nghiệp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a5276;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --text-color: #333;
+            --text-light: #7f8c8d;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        header {
+            background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            grid-column: 1 / -1;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+        
+        .avatar-container {
+            position: relative;
+            margin-right: 30px;
+        }
+        
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: var(--primary-color);
+            border: 5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .profile-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--accent-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border: 3px solid white;
+            z-index: 2;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-info h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .profile-title {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 18px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .contact-item i {
+            margin-right: 10px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .skills-section {
+            background-color: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+            height: fit-content;
+        }
+        
+        .skills-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--light-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 12px;
+            color: var(--secondary-color);
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .skill-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border-left: 4px solid var(--secondary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-item:hover {
+            background: #e8f4fd;
+            transform: translateX(5px);
+        }
+        
+        .skill-item.active {
+            background: linear-gradient(135deg, #e8f4fd, #d4e9fa);
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+        }
+        
+        .skill-name {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .skill-name i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .skill-count {
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .skill-description {
+            font-size: 15px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        
+        .exercises-section {
+            background-color: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .exercises-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .transport-filter {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background-color: var(--light-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-btn:hover {
+            background-color: #d6dbdf;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .exercise-card {
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: white;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .exercise-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+            border-color: var(--secondary-color);
+        }
+        
+        .exercise-title {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .exercise-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 18px;
+        }
+        
+        .exercise-description-container {
+            margin-bottom: 20px;
+        }
+        
+        .exercise-description {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.7;
+            white-space: pre-line;
+            word-wrap: break-word;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .exercise-description.collapsed {
+            max-height: 120px;
+            overflow: hidden;
+        }
+        
+        .exercise-description.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, #f8f9fa);
+            pointer-events: none;
+        }
+        
+        .show-more-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .show-more-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .show-more-btn i {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .show-more-btn.expanded i {
+            transform: rotate(180deg);
+        }
+        
+        .transport-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            margin-right: 8px;
+        }
+        
+        .exercise-skills {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #e0e0e0;
+            display: block;
+        }
+        
+        .skill-tag {
+            display: inline-block;
+            background: #e1f0fa;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 5px 8px 5px 0;
+            border: 1px solid #bde0fe;
+        }
+        
+        .skill-tag i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        
+        .exercise-date {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .exercise-date i {
+            margin-right: 5px;
+        }
+        
+        .no-exercises {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 18px;
+        }
+        
+        .no-exercises i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            grid-column: 1 / -1;
+        }
+        
+        .error-message {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 2rem 0;
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 30px 20px;
+            }
+            
+            .avatar-container {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .contact-info {
+                justify-content: center;
+            }
+            
+            .transport-filter {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner" style="font-size: 3rem; color: var(--secondary-color); margin-bottom: 1rem;">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <h3>Đang tải dữ liệu...</h3>
+            <p>Vui lòng chờ trong giây lát</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #e74c3c; margin-bottom: 1rem;"></i>
+            <h3 id="errorTitle">Đã xảy ra lỗi</h3>
+            <p id="errorText"></p>
+            <button onclick="goBackToAppSheet()" style="margin-top: 15px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                <i class="fas fa-arrow-left"></i> Quay lại AppSheet
+            </button>
+        </div>
+
+        <!-- Profile Content -->
+        <div id="profileContent" style="display: none; grid-column: 1 / -1;">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Web App URL của bạn
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeXvrU4KN2JIT36FMnIF8lo8c5Rd86UTcbndOrpiEnyitoJedC_V0sEMW5oTbZFfoEXA/exec';
+
+        // Lấy username từ URL
+        function getUsernameFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('username');
+        }
+
+        // Load profile từ Apps Script Web App
+        async function loadProfile() {
+            const username = getUsernameFromURL();
+            
+            if (!username) {
+                showError('Thiếu thông tin', 'Vui lòng truy cập từ AppSheet với tham số username.');
+                return;
+            }
+
+            try {
+                showLoading('Đang tải thông tin cá nhân...');
+                
+                const response = await fetch(`${WEB_APP_URL}?username=${encodeURIComponent(username)}`);
+                const html = await response.text();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+                document.getElementById('profileContent').innerHTML = html;
+                
+                // Khởi tạo event handlers sau khi load content
+                initializeEventHandlers();
+                
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showError('Lỗi kết nối', 'Không thể tải dữ liệu từ hệ thống. Vui lòng thử lại.');
+            }
+        }
+
+        function showLoading(message) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'none';
+            
+            if (message) {
+                const loadingElement = document.getElementById('loading');
+                const messageElement = loadingElement.querySelector('p');
+                if (messageElement) {
+                    messageElement.textContent = message;
+                }
+            }
+        }
+
+        function showError(title, message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('profileContent').style.display = 'none';
+            
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorText').textContent = message;
+        }
+
+        function goBackToAppSheet() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.close();
+            }
+        }
+
+        // Khởi tạo event handlers
+        function initializeEventHandlers() {
+            // Bộ lọc phương tiện vận chuyển
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    filterExercises(button.getAttribute('data-filter'));
+                });
+            });
+            
+            // Click kỹ năng
+            const skillItems = document.querySelectorAll('.skill-item');
+            skillItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    skillItems.forEach(skill => skill.classList.remove('active'));
+                    item.classList.add('active');
+                    filterExercisesBySkill(item.getAttribute('data-id'));
+                });
+            });
+            
+            // Nút hiển thị thêm
+            const showMoreButtons = document.querySelectorAll('.show-more-btn');
+            showMoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const description = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    const textSpan = this.querySelector('span');
+                    
+                    if (description.classList.contains('collapsed')) {
+                        description.classList.remove('collapsed');
+                        textSpan.textContent = 'Thu gọn';
+                        this.classList.add('expanded');
+                    } else {
+                        description.classList.add('collapsed');
+                        textSpan.textContent = 'Hiển thị thêm';
+                        this.classList.remove('expanded');
+                    }
+                });
+            });
+            
+            // Xử lý lỗi ảnh
+            const avatarImages = document.querySelectorAll('.avatar-img');
+            avatarImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    this.style.display = 'none';
+                    const avatarIcon = this.parentElement.querySelector('.fa-user');
+                    if (avatarIcon) {
+                        avatarIcon.style.display = 'flex';
+                    }
+                });
+            });
+        }
+
+        function filterExercises(filter) {
+            const exercises = document.querySelectorAll('.exercise-card');
+            exercises.forEach(exercise => {
+                const transportElement = exercise.querySelector('.transport-icon');
+                if (!transportElement) {
+                    exercise.style.display = 'none';
+                    return;
+                }
+                
+                const transportIcon = transportElement.textContent.trim();
+                let shouldShow = true;
+                
+                if (filter !== 'all') {
+                    const transportMap = {
+                        'sea': '⛴',
+                        'air': '✈️',
+                        'road': '🚛'
+                    };
+                    
+                    const expectedIcon = transportMap[filter];
+                    if (transportIcon !== expectedIcon) {
+                        shouldShow = false;
+                    }
+                }
+                
+                exercise.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+        
+        function filterExercisesBySkill(skillId) {
+            const skillElement = document.querySelector(`[data-id="${skillId}"]`);
+            if (!skillElement) return;
+            
+            const skillName = skillElement.querySelector('.skill-name div').textContent.trim();
+            const exercises = document.querySelectorAll('.exercise-card');
+            
+            exercises.forEach(exercise => {
+                const skills = exercise.querySelectorAll('.skill-tag');
+                let hasSkill = false;
+                
+                skills.forEach(skill => {
+                    if (skill.textContent.includes(skillName)) {
+                        hasSkill = true;
+                    }
+                });
+                
+                exercise.style.display = hasSkill ? 'block' : 'none';
+            });
+        }
+
+        // Khởi chạy
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>
