@@ -184,19 +184,12 @@
             border-radius: 12px;
             background: #f8fafc;
             border-left: 4px solid var(--secondary-color);
-            cursor: pointer;
             transition: all 0.3s ease;
         }
         
         .skill-item:hover {
             background: #e8f4fd;
             transform: translateX(5px);
-        }
-        
-        .skill-item.active {
-            background: linear-gradient(135deg, #e8f4fd, #d4e9fa);
-            border-left: 4px solid var(--accent-color);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
         }
         
         .skill-name {
@@ -573,10 +566,7 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     <span>${profile.address || 'Chưa cập nhật'}</span>
                                 </div>
-                                <div class="contact-item">
-                                    <i class="fas fa-user-tag"></i>
-                                    <span>${profile.username || 'Chưa cập nhật'}</span>
-                                </div>
+                                <!-- ĐÃ XÓA PHẦN HIỂN THỊ USERNAME -->
                             </div>
                         </div>
                     </div>
@@ -605,7 +595,8 @@
             }
             
             const skillsHtml = skills.map((skill, index) => `
-                <div class="skill-item ${index === 0 ? 'active' : ''}" data-id="${skill.id}">
+                <div class="skill-item" data-id="${skill.id}">
+                    <!-- ĐÃ XÓA class "active" và tính năng click -->
                     <div class="skill-name">
                         <div>
                             <i class="${skill.icon || 'fas fa-cogs'}"></i>
@@ -774,16 +765,6 @@
                 });
             });
             
-            // Click kỹ năng
-            const skillItems = document.querySelectorAll('.skill-item');
-            skillItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    skillItems.forEach(skill => skill.classList.remove('active'));
-                    item.classList.add('active');
-                    filterExercisesBySkill(item.getAttribute('data-id'));
-                });
-            });
-            
             // Nút hiển thị thêm
             const showMoreButtons = document.querySelectorAll('.show-more-btn');
             showMoreButtons.forEach(button => {
@@ -804,6 +785,8 @@
                     }
                 });
             });
+            
+            // ĐÃ XÓA phần xử lý click kỹ năng
         }
 
         function filterExercises(filter) {
@@ -834,27 +817,8 @@
                 exercise.style.display = shouldShow ? 'block' : 'none';
             });
         }
-        
-        function filterExercisesBySkill(skillId) {
-            const skillElement = document.querySelector(`[data-id="${skillId}"]`);
-            if (!skillElement) return;
-            
-            const skillName = skillElement.querySelector('.skill-name div').textContent.trim();
-            const exercises = document.querySelectorAll('.exercise-card');
-            
-            exercises.forEach(exercise => {
-                const skills = exercise.querySelectorAll('.skill-tag');
-                let hasSkill = false;
-                
-                skills.forEach(skill => {
-                    if (skill.textContent.includes(skillName)) {
-                        hasSkill = true;
-                    }
-                });
-                
-                exercise.style.display = hasSkill ? 'block' : 'none';
-            });
-        }
+
+        // ĐÃ XÓA hàm filterExercisesBySkill
 
         // Khởi chạy ứng dụng
         document.addEventListener('DOMContentLoaded', loadProfile);
