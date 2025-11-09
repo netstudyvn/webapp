@@ -38,9 +38,6 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
         }
         
         header {
@@ -50,7 +47,6 @@
             margin-bottom: 30px;
             box-shadow: var(--card-shadow);
             overflow: hidden;
-            grid-column: 1 / -1;
         }
         
         .profile-header {
@@ -101,7 +97,6 @@
             justify-content: center;
             font-size: 16px;
             border: 3px solid white;
-            z-index: 2;
         }
         
         .profile-info {
@@ -142,6 +137,12 @@
             font-size: 18px;
             width: 24px;
             text-align: center;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
         }
         
         .skills-section {
@@ -285,8 +286,6 @@
             transition: all 0.3s ease;
             cursor: pointer;
             background: white;
-            width: 100%;
-            margin-bottom: 20px;
         }
         
         .exercise-card:hover {
@@ -299,9 +298,6 @@
             font-size: 20px;
             color: var(--primary-color);
             margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
         }
         
         .exercise-meta {
@@ -344,7 +340,6 @@
             right: 0;
             height: 40px;
             background: linear-gradient(transparent, #f8f9fa);
-            pointer-events: none;
         }
         
         .show-more-btn {
@@ -392,7 +387,6 @@
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px dashed #e0e0e0;
-            display: block;
         }
         
         .skill-tag {
@@ -424,7 +418,6 @@
         }
         
         .no-exercises {
-            grid-column: 1 / -1;
             text-align: center;
             padding: 40px;
             color: var(--text-light);
@@ -440,7 +433,6 @@
         .loading {
             text-align: center;
             padding: 3rem;
-            grid-column: 1 / -1;
         }
         
         .error-message {
@@ -450,11 +442,10 @@
             padding: 2rem;
             text-align: center;
             margin: 2rem 0;
-            grid-column: 1 / -1;
         }
         
         @media (max-width: 1024px) {
-            .container {
+            .main-content {
                 grid-template-columns: 1fr;
             }
         }
@@ -503,14 +494,14 @@
         </div>
 
         <!-- Profile Content -->
-        <div id="profileContent" style="display: none; grid-column: 1 / -1;">
-            <!-- Content will be loaded here -->
+        <div id="profileContent" style="display: none;">
+            <!-- Will be populated by JavaScript -->
         </div>
     </div>
 
     <script>
-        // Web App URL của bạn
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeXvrU4KN2JIT36FMnIF8lo8c5Rd86UTcbndOrpiEnyitoJedC_V0sEMW5oTbZFfoEXA/exec';
+        // API URL - Apps Script Web App của bạn
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzeXvrU4KN2JIT36FMnIF8lo8c5Rd86UTcbndOrpiEnyitoJedC_V0sEMW5oTbZFfoEXA/exec';
 
         // Lấy username từ URL
         function getUsernameFromURL() {
@@ -518,7 +509,7 @@
             return urlParams.get('username');
         }
 
-        // Load profile từ Apps Script Web App
+        // Load profile data từ API
         async function loadProfile() {
             const username = getUsernameFromURL();
             
@@ -530,15 +521,17 @@
             try {
                 showLoading('Đang tải thông tin cá nhân...');
                 
-                const response = await fetch(`${WEB_APP_URL}?username=${encodeURIComponent(username)}`);
-                const html = await response.text();
+                // Gọi API Apps Script
+                const response = await fetch(`${API_URL}?username=${encodeURIComponent(username)}`);
+                const result = await response.json();
                 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('profileContent').style.display = 'block';
-                document.getElementById('profileContent').innerHTML = html;
-                
-                // Khởi tạo event handlers sau khi load content
-                initializeEventHandlers();
+                if (!result.success) {
+                    showError('Lỗi dữ liệu', result.error);
+                    return;
+                }
+
+                // Render data lên giao diện
+                renderProfile(result.data);
                 
             } catch (error) {
                 console.error('Lỗi:', error);
@@ -546,25 +539,205 @@
             }
         }
 
-        function showLoading(message) {
+        // Render profile data
+        function renderProfile(data) {
+            const { profile, skills, exercises } = data;
+            
+            const profileHtml = `
+                <header>
+                    <div class="profile-header">
+                        <div class="avatar-container">
+                            <div class="avatar">
+                                ${profile.avatarUrl ? 
+                                    `<img class="avatar-img" src="${profile.avatarUrl}" alt="Avatar" onerror="handleImageError(this)">` : 
+                                    `<i class="fas fa-user"></i>`
+                                }
+                            </div>
+                            <div class="profile-badge">
+                                <i class="fas fa-award"></i>
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <h1>${profile.fullName || 'Chưa cập nhật'}</h1>
+                            <div class="profile-title">${profile.role || 'Chưa cập nhật'}</div>
+                            <div class="contact-info">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>${profile.email || 'Chưa cập nhật'}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>${profile.phone || 'Chưa cập nhật'}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${profile.address || 'Chưa cập nhật'}</span>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-user-tag"></i>
+                                    <span>${profile.username || 'Chưa cập nhật'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="main-content">
+                    ${renderSkillsSection(skills)}
+                    ${renderExercisesSection(exercises)}
+                </div>
+            `;
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'block';
+            document.getElementById('profileContent').innerHTML = profileHtml;
+            
+            initializeEventHandlers();
+        }
+
+        // Render skills section
+        function renderSkillsSection(skills) {
+            if (!skills || skills.length === 0) {
+                return `<section class="skills-section">
+                    <h2 class="section-title"><i class="fas fa-tools"></i>Kỹ năng thực hành</h2>
+                    <p style="text-align: center; color: var(--text-light); padding: 2rem;">Chưa có kỹ năng nào được đánh giá</p>
+                </section>`;
+            }
+            
+            const skillsHtml = skills.map((skill, index) => `
+                <div class="skill-item ${index === 0 ? 'active' : ''}" data-id="${skill.id}">
+                    <div class="skill-name">
+                        <div>
+                            <i class="${skill.icon || 'fas fa-cogs'}"></i>
+                            ${skill.name}
+                        </div>
+                        <span class="skill-count">${skill.exerciseCount || 0} bài</span>
+                    </div>
+                    <div class="skill-description">${skill.description || 'Không có mô tả'}</div>
+                </div>
+            `).join('');
+            
+            return `<section class="skills-section">
+                <h2 class="section-title"><i class="fas fa-tools"></i>Kỹ năng thực hành</h2>
+                <div class="skills-list">${skillsHtml}</div>
+            </section>`;
+        }
+
+        // Render exercises section
+        function renderExercisesSection(exercises) {
+            if (!exercises || exercises.length === 0) {
+                return `<section class="exercises-section">
+                    <h2 class="section-title"><i class="fas fa-tasks"></i>Bài tập đã hoàn thành</h2>
+                    <div class="no-exercises">
+                        <i class="fas fa-inbox"></i>
+                        <p>Chưa có bài tập nào hoàn thành.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Các bài tập hoàn thành sẽ được hiển thị tại đây.</p>
+                    </div>
+                </section>`;
+            }
+            
+            const exercisesHtml = exercises.map(exercise => `
+                <div class="exercise-card" data-id="${exercise.id}">
+                    <h3 class="exercise-title">${exercise.title || 'Bài tập không tên'}</h3>
+                    <div class="exercise-meta">
+                        <span>
+                            <span class="transport-icon">${getTransportIcon(exercise.transport)}</span>
+                            ${getTransportText(exercise.transport)}
+                        </span>
+                        <span>${exercise.date || "Chưa cập nhật ngày"}</span>
+                    </div>
+                    
+                    <div class="exercise-description-container">
+                        <div class="exercise-description collapsed" id="desc-${exercise.id}">
+                            ${exercise.description ? exercise.description.trim() : "Không có mô tả"}
+                        </div>
+                        ${exercise.description && exercise.description.length > 150 ? `
+                            <button class="show-more-btn" data-target="desc-${exercise.id}">
+                                <span>Hiển thị thêm</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    ${exercise.date ? `
+                    <div class="exercise-date">
+                        <i class="far fa-calendar-alt"></i> Ngày hoàn thành: ${exercise.date}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="exercise-skills">
+                        <div style="margin: 10px 0; font-weight: 600; color: var(--primary-color);">
+                            <i class="fas fa-list-ul"></i> Kỹ năng đã thực hành:
+                        </div>
+                        ${exercise.skills && exercise.skills.length > 0 ? 
+                            exercise.skills.map(skill => `
+                                <span class="skill-tag">
+                                    <i class="fas fa-check-circle"></i>
+                                    ${skill}
+                                </span>
+                            `).join('') : 
+                            '<p style="color: var(--text-light); font-style: italic;">Không có kỹ năng nào được gán</p>'
+                        }
+                    </div>
+                </div>
+            `).join('');
+            
+            return `<section class="exercises-section">
+                <div class="exercises-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-tasks"></i>
+                        Bài tập đã hoàn thành
+                        <span style="font-size: 16px; color: var(--text-light); margin-left: 10px;">(${exercises.length} bài)</span>
+                    </h2>
+                    
+                    <div class="transport-filter">
+                        <button class="filter-btn active" data-filter="all">
+                            <i class="fas fa-layer-group"></i> Tất cả
+                        </button>
+                        <button class="filter-btn" data-filter="sea">
+                            <span class="transport-icon">⛴</span> Đường biển
+                        </button>
+                        <button class="filter-btn" data-filter="air">
+                            <span class="transport-icon">✈️</span> Đường hàng không
+                        </button>
+                        <button class="filter-btn" data-filter="road">
+                            <span class="transport-icon">🚛</span> Đường bộ
+                        </button>
+                    </div>
+                </div>
+                <div class="exercises-grid">${exercisesHtml}</div>
+            </section>`;
+        }
+
+        // Helper functions
+        function getTransportIcon(transport) {
+            const icons = {
+                'sea': '⛴',
+                'air': '✈️',
+                'road': '🚛'
+            };
+            return icons[transport] || '🚚';
+        }
+
+        function getTransportText(transport) {
+            const texts = {
+                'sea': 'Đường biển',
+                'air': 'Đường hàng không',
+                'road': 'Đường bộ'
+            };
+            return texts[transport] || 'Không xác định';
+        }
+
+        function showLoading(message = 'Đang tải dữ liệu...') {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('profileContent').style.display = 'none';
-            
-            if (message) {
-                const loadingElement = document.getElementById('loading');
-                const messageElement = loadingElement.querySelector('p');
-                if (messageElement) {
-                    messageElement.textContent = message;
-                }
-            }
         }
 
         function showError(title, message) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('errorMessage').style.display = 'block';
             document.getElementById('profileContent').style.display = 'none';
-            
             document.getElementById('errorTitle').textContent = title;
             document.getElementById('errorText').textContent = message;
         }
@@ -574,6 +747,18 @@
                 window.history.back();
             } else {
                 window.close();
+            }
+        }
+
+        function handleImageError(img) {
+            img.style.display = 'none';
+            const avatar = img.closest('.avatar');
+            if (avatar) {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-user';
+                icon.style.fontSize = '50px';
+                icon.style.color = 'var(--primary-color)';
+                avatar.appendChild(icon);
             }
         }
 
@@ -616,18 +801,6 @@
                         description.classList.add('collapsed');
                         textSpan.textContent = 'Hiển thị thêm';
                         this.classList.remove('expanded');
-                    }
-                });
-            });
-            
-            // Xử lý lỗi ảnh
-            const avatarImages = document.querySelectorAll('.avatar-img');
-            avatarImages.forEach(img => {
-                img.addEventListener('error', function() {
-                    this.style.display = 'none';
-                    const avatarIcon = this.parentElement.querySelector('.fa-user');
-                    if (avatarIcon) {
-                        avatarIcon.style.display = 'flex';
                     }
                 });
             });
@@ -683,7 +856,7 @@
             });
         }
 
-        // Khởi chạy
+        // Khởi chạy ứng dụng
         document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
 </body>
