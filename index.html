@@ -185,11 +185,18 @@
             background: #f8fafc;
             border-left: 4px solid var(--secondary-color);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .skill-item:hover {
             background: #e8f4fd;
             transform: translateX(5px);
+        }
+        
+        .skill-item.active {
+            background: linear-gradient(135deg, #e8f4fd, #d4e9fa);
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
         }
         
         .skill-name {
@@ -308,16 +315,18 @@
         .exercise-description {
             font-size: 15px;
             color: #555;
-            line-height: 1.7;
+            line-height: 1.6;
             white-space: pre-line;
             word-wrap: break-word;
             background: #f8f9fa;
-            padding: 15px;
+            padding: 12px 15px;
             border-radius: 8px;
             border-left: 4px solid var(--secondary-color);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+            margin: 0;
+            display: block;
         }
         
         .exercise-description.collapsed {
@@ -566,7 +575,6 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     <span>${profile.address || 'Chưa cập nhật'}</span>
                                 </div>
-                                <!-- ĐÃ XÓA PHẦN HIỂN THỊ USERNAME -->
                             </div>
                         </div>
                     </div>
@@ -595,8 +603,7 @@
             }
             
             const skillsHtml = skills.map((skill, index) => `
-                <div class="skill-item" data-id="${skill.id}">
-                    <!-- ĐÃ XÓA class "active" và tính năng click -->
+                <div class="skill-item ${index === 0 ? 'active' : ''}" data-id="${skill.id}" data-name="${skill.name}">
                     <div class="skill-name">
                         <div>
                             <i class="${skill.icon || 'fas fa-cogs'}"></i>
@@ -765,6 +772,21 @@
                 });
             });
             
+            // Click kỹ năng để lọc bài tập
+            const skillItems = document.querySelectorAll('.skill-item');
+            skillItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Xóa active từ tất cả kỹ năng
+                    skillItems.forEach(skill => skill.classList.remove('active'));
+                    // Thêm active cho kỹ năng được chọn
+                    item.classList.add('active');
+                    
+                    // Lọc bài tập theo kỹ năng
+                    const skillName = item.getAttribute('data-name');
+                    filterExercisesBySkill(skillName);
+                });
+            });
+            
             // Nút hiển thị thêm
             const showMoreButtons = document.querySelectorAll('.show-more-btn');
             showMoreButtons.forEach(button => {
@@ -786,11 +808,20 @@
                 });
             });
             
-            // ĐÃ XÓA phần xử lý click kỹ năng
+            // TỰ ĐỘNG LỌC THEO KỸ NĂNG ĐẦU TIÊN KHI TRANG LOAD
+            if (skillItems.length > 0) {
+                const firstSkill = skillItems[0];
+                const firstSkillName = firstSkill.getAttribute('data-name');
+                filterExercisesBySkill(firstSkillName);
+            }
         }
 
+        // Lọc bài tập theo phương tiện vận chuyển
         function filterExercises(filter) {
             const exercises = document.querySelectorAll('.exercise-card');
+            const activeSkill = document.querySelector('.skill-item.active');
+            const activeSkillName = activeSkill ? activeSkill.getAttribute('data-name') : null;
+            
             exercises.forEach(exercise => {
                 const transportElement = exercise.querySelector('.transport-icon');
                 if (!transportElement) {
@@ -799,7 +830,7 @@
                 }
                 
                 const transportIcon = transportElement.textContent.trim();
-                let shouldShow = true;
+                let shouldShowByTransport = true;
                 
                 if (filter !== 'all') {
                     const transportMap = {
@@ -810,15 +841,92 @@
                     
                     const expectedIcon = transportMap[filter];
                     if (transportIcon !== expectedIcon) {
-                        shouldShow = false;
+                        shouldShowByTransport = false;
                     }
                 }
                 
-                exercise.style.display = shouldShow ? 'block' : 'none';
+                // Kết hợp lọc phương tiện và kỹ năng
+                let shouldShowBySkill = true;
+                if (activeSkillName) {
+                    const skills = exercise.querySelectorAll('.skill-tag');
+                    let hasSkill = false;
+                    
+                    skills.forEach(skill => {
+                        if (skill.textContent.includes(activeSkillName)) {
+                            hasSkill = true;
+                        }
+                    });
+                    shouldShowBySkill = hasSkill;
+                }
+                
+                exercise.style.display = (shouldShowByTransport && shouldShowBySkill) ? 'block' : 'none';
             });
+            
+            // Cập nhật thông báo nếu cần
+            updateNoExercisesMessage();
         }
 
-        // ĐÃ XÓA hàm filterExercisesBySkill
+        // Lọc bài tập theo kỹ năng
+        function filterExercisesBySkill(skillName) {
+            const exercises = document.querySelectorAll('.exercise-card');
+            const activeTransport = document.querySelector('.filter-btn.active');
+            const activeFilter = activeTransport ? activeTransport.getAttribute('data-filter') : 'all';
+            
+            exercises.forEach(exercise => {
+                const transportElement = exercise.querySelector('.transport-icon');
+                const skills = exercise.querySelectorAll('.skill-tag');
+                
+                let hasSkill = false;
+                skills.forEach(skill => {
+                    if (skill.textContent.includes(skillName)) {
+                        hasSkill = true;
+                    }
+                });
+                
+                let shouldShowByTransport = true;
+                if (activeFilter !== 'all' && transportElement) {
+                    const transportIcon = transportElement.textContent.trim();
+                    const transportMap = {
+                        'sea': '⛴',
+                        'air': '✈️',
+                        'road': '🚛'
+                    };
+                    const expectedIcon = transportMap[activeFilter];
+                    shouldShowByTransport = transportIcon === expectedIcon;
+                }
+                
+                exercise.style.display = (hasSkill && shouldShowByTransport) ? 'block' : 'none';
+            });
+            
+            updateNoExercisesMessage();
+        }
+
+        // Cập nhật thông báo khi không có bài tập
+        function updateNoExercisesMessage() {
+            const exercises = document.querySelectorAll('.exercise-card');
+            const visibleExercises = Array.from(exercises).filter(ex => ex.style.display !== 'none');
+            const exercisesContainer = document.querySelector('.exercises-grid');
+            let noExercisesMessage = exercisesContainer.querySelector('.no-exercises-message');
+            
+            if (visibleExercises.length === 0) {
+                if (!noExercisesMessage) {
+                    noExercisesMessage = document.createElement('div');
+                    noExercisesMessage.className = 'no-exercises-message';
+                    noExercisesMessage.innerHTML = `
+                        <div class="no-exercises">
+                            <i class="fas fa-search"></i>
+                            <p>Không tìm thấy bài tập phù hợp</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Hãy thử chọn bộ lọc khác</p>
+                        </div>
+                    `;
+                    exercisesContainer.appendChild(noExercisesMessage);
+                }
+            } else {
+                if (noExercisesMessage) {
+                    noExercisesMessage.remove();
+                }
+            }
+        }
 
         // Khởi chạy ứng dụng
         document.addEventListener('DOMContentLoaded', loadProfile);
