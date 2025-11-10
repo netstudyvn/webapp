@@ -228,7 +228,6 @@
             line-height: 1.7;
         }
 
-        /* Thêm vào phần CSS hiện có */
         .import-export-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -581,7 +580,6 @@
             try {
                 showLoading('Đang tải thông tin cá nhân...');
                 
-                // Gọi API Apps Script
                 const response = await fetch(`${API_URL}?username=${encodeURIComponent(username)}`);
                 const result = await response.json();
                 
@@ -590,7 +588,6 @@
                     return;
                 }
 
-                // Render data lên giao diện
                 renderProfile(result.data);
                 
             } catch (error) {
@@ -651,7 +648,7 @@
             initializeEventHandlers();
         }
 
-        // Render skills section - ĐÃ CẬP NHẬT
+        // Render skills section
         function renderSkillsSection(skills) {
             if (!skills || skills.length === 0) {
                 return `<section class="skills-section">
@@ -692,7 +689,7 @@
             </section>`;
         }
 
-        // Render exercises section - ĐÃ CẬP NHẬT
+        // Render exercises section
         function renderExercisesSection(exercises) {
             if (!exercises || exercises.length === 0) {
                 return `<section class="exercises-section">
@@ -741,17 +738,9 @@
                         
                         <div class="exercise-skills">
                             <div style="margin: 10px 0; font-weight: 600; color: var(--primary-color);">
-                                <i class="fas fa-list-ul"></i> Kỹ năng đã thực hành:
+                                <i class="fas fa-tag"></i>
+                                Loại hình: ${exercise.importExport || 'Không xác định'}
                             </div>
-                            ${exercise.skills && exercise.skills.length > 0 ? 
-                                exercise.skills.map(skill => `
-                                    <span class="skill-tag">
-                                        <i class="fas fa-check-circle"></i>
-                                        ${skill}
-                                    </span>
-                                `).join('') : 
-                                '<p style="color: var(--text-light); font-style: italic;">Không có kỹ năng nào được gán</p>'
-                            }
                         </div>
                     </div>
                 `;
@@ -803,7 +792,6 @@
             return texts[transport] || 'Không xác định';
         }
 
-        // Hàm helper để hiển thị badge xuất/nhập
         function getImportExportBadge(group) {
             if (!group) return '';
             
@@ -826,56 +814,6 @@
             }
             
             return `<span class="import-export-badge ${badgeClass}">${badgeText}</span>`;
-        }
-
-        // Hàm lọc bài tập theo kỹ năng và nhóm - SỬA ĐỔI HOÀN TOÀN
-        function filterExercisesBySkill(skillName, skillGroup) {
-            const exercises = document.querySelectorAll('.exercise-card');
-            const activeTransport = document.querySelector('.filter-btn.active');
-            const activeFilter = activeTransport ? activeTransport.getAttribute('data-filter') : 'all';
-            
-            exercises.forEach(exercise => {
-                const transportElement = exercise.querySelector('.transport-icon');
-                const skills = exercise.querySelectorAll('.skill-tag');
-                const exerciseGroup = exercise.getAttribute('data-group') || '';
-                
-                // KIỂM TRA KỸ NĂNG: So sánh tên kỹ năng trong bài tập với kỹ năng được chọn
-                let hasSkill = false;
-                skills.forEach(skill => {
-                    if (skill.textContent.trim().includes(skillName.trim())) {
-                        hasSkill = true;
-                    }
-                });
-                
-                // KIỂM TRA PHƯƠNG TIỆN VẬN CHUYỂN
-                let shouldShowByTransport = true;
-                if (activeFilter !== 'all' && transportElement) {
-                    const transportIcon = transportElement.textContent.trim();
-                    const transportMap = {
-                        'sea': '⛴',
-                        'air': '✈️',
-                        'road': '🚛'
-                    };
-                    const expectedIcon = transportMap[activeFilter];
-                    shouldShowByTransport = transportIcon === expectedIcon;
-                }
-                
-                // KIỂM TRA NHÓM: So sánh nhóm của kỹ năng với nhóm của bài tập
-                let shouldShowByGroup = true;
-                if (skillGroup && exerciseGroup) {
-                    const skillGroupLower = skillGroup.toLowerCase();
-                    const exerciseGroupLower = exerciseGroup.toLowerCase();
-                    
-                    // Nếu nhóm kỹ năng khớp với nhóm bài tập thì hiển thị
-                    shouldShowByGroup = exerciseGroupLower.includes(skillGroupLower) || 
-                                       skillGroupLower.includes(exerciseGroupLower);
-                }
-                
-                // HIỂN THỊ nếu thỏa mãn cả 3 điều kiện
-                exercise.style.display = (hasSkill && shouldShowByTransport && shouldShowByGroup) ? 'block' : 'none';
-            });
-            
-            updateNoExercisesMessage();
         }
 
         function showLoading(message = 'Đang tải dữ liệu...') {
@@ -912,7 +850,64 @@
             }
         }
 
-        // Khởi tạo event handlers - ĐÃ CẬP NHẬT
+        // Hàm lọc bài tập theo NHÓM
+        function filterExercisesBySkill(skillName, skillGroup) {
+            const exercises = document.querySelectorAll('.exercise-card');
+            const activeTransport = document.querySelector('.filter-btn.active');
+            const activeFilter = activeTransport ? activeTransport.getAttribute('data-filter') : 'all';
+            
+            console.log('=== FILTER DEBUG ===');
+            console.log('Skill Name:', skillName);
+            console.log('Skill Group:', skillGroup);
+            
+            let visibleCount = 0;
+            
+            exercises.forEach(exercise => {
+                const transportElement = exercise.querySelector('.transport-icon');
+                const exerciseGroup = exercise.getAttribute('data-group') || '';
+                
+                // KIỂM TRA PHƯƠNG TIỆN VẬN CHUYỂN
+                let shouldShowByTransport = true;
+                if (activeFilter !== 'all' && transportElement) {
+                    const transportIcon = transportElement.textContent.trim();
+                    const transportMap = {
+                        'sea': '⛴',
+                        'air': '✈️',
+                        'road': '🚛'
+                    };
+                    const expectedIcon = transportMap[activeFilter];
+                    shouldShowByTransport = transportIcon === expectedIcon;
+                }
+                
+                // KIỂM TRA NHÓM: So sánh nhóm của kỹ năng với nhóm của bài tập
+                let shouldShowByGroup = false;
+                if (skillGroup && exerciseGroup) {
+                    const skillGroupLower = skillGroup.toLowerCase();
+                    const exerciseGroupLower = exerciseGroup.toLowerCase();
+                    
+                    // SO SÁNH TRỰC TIẾP GIÁ TRỊ NHÓM
+                    shouldShowByGroup = exerciseGroupLower === skillGroupLower ||
+                                       exerciseGroupLower.includes(skillGroupLower) || 
+                                       skillGroupLower.includes(exerciseGroupLower);
+                }
+                
+                const shouldShow = shouldShowByTransport && shouldShowByGroup;
+                
+                if (shouldShow) {
+                    visibleCount++;
+                    console.log('SHOWING Exercise:', exercise.querySelector('.exercise-title').textContent);
+                }
+                
+                exercise.style.display = shouldShow ? 'block' : 'none';
+            });
+            
+            console.log('Visible exercises:', visibleCount);
+            console.log('=== END FILTER DEBUG ===');
+            
+            updateNoExercisesMessage();
+        }
+
+        // Khởi tạo event handlers
         function initializeEventHandlers() {
             // Bộ lọc phương tiện vận chuyển
             const filterButtons = document.querySelectorAll('.filter-btn');
@@ -932,16 +927,13 @@
                 });
             });
             
-            // Click kỹ năng để lọc bài tập - ĐÃ CẬP NHẬT
+            // Click kỹ năng để lọc bài tập
             const skillItems = document.querySelectorAll('.skill-item');
             skillItems.forEach(item => {
                 item.addEventListener('click', () => {
-                    // Xóa active từ tất cả kỹ năng
                     skillItems.forEach(skill => skill.classList.remove('active'));
-                    // Thêm active cho kỹ năng được chọn
                     item.classList.add('active');
                     
-                    // Lọc bài tập theo kỹ năng và nhóm
                     const skillName = item.getAttribute('data-name');
                     const skillGroup = item.getAttribute('data-group');
                     filterExercisesBySkill(skillName, skillGroup);
@@ -978,11 +970,10 @@
             }
         }
 
-        // Lọc bài tập theo phương tiện vận chuyển - ĐÃ CẬP NHẬT
+        // Lọc bài tập theo phương tiện vận chuyển
         function filterExercises(filter) {
             const exercises = document.querySelectorAll('.exercise-card');
             const activeSkill = document.querySelector('.skill-item.active');
-            const activeSkillName = activeSkill ? activeSkill.getAttribute('data-name') : null;
             const activeSkillGroup = activeSkill ? activeSkill.getAttribute('data-group') : null;
             
             exercises.forEach(exercise => {
@@ -1008,36 +999,21 @@
                     }
                 }
                 
-                // Kết hợp lọc phương tiện và kỹ năng/nhóm
-                let shouldShowBySkill = true;
-                if (activeSkillName && activeSkillGroup) {
-                    const skills = exercise.querySelectorAll('.skill-tag');
-                    let hasSkill = false;
-                    
-                    skills.forEach(skill => {
-                        if (skill.textContent.includes(activeSkillName)) {
-                            hasSkill = true;
-                        }
-                    });
-                    
-                    // Kiểm tra nhóm xuất/nhập
+                // KIỂM TRA NHÓM
+                let shouldShowByGroup = true;
+                if (activeSkillGroup) {
                     const exerciseGroup = exercise.getAttribute('data-group') || '';
                     const skillGroupLower = activeSkillGroup.toLowerCase();
                     const exerciseGroupLower = exerciseGroup.toLowerCase();
                     
-                    let shouldShowByGroup = true;
-                    if (skillGroupLower && exerciseGroupLower) {
-                        shouldShowByGroup = exerciseGroupLower.includes(skillGroupLower) || 
-                                           skillGroupLower.includes(exerciseGroupLower);
-                    }
-                    
-                    shouldShowBySkill = hasSkill && shouldShowByGroup;
+                    shouldShowByGroup = exerciseGroupLower === skillGroupLower ||
+                                       exerciseGroupLower.includes(skillGroupLower) || 
+                                       skillGroupLower.includes(exerciseGroupLower);
                 }
                 
-                exercise.style.display = (shouldShowByTransport && shouldShowBySkill) ? 'block' : 'none';
+                exercise.style.display = (shouldShowByTransport && shouldShowByGroup) ? 'block' : 'none';
             });
             
-            // Cập nhật thông báo nếu cần
             updateNoExercisesMessage();
         }
 
