@@ -689,7 +689,7 @@
             </section>`;
         }
 
-        // Render exercises section
+        // Render exercises section - ĐÃ CẬP NHẬT: HIỂN THỊ KỸ NĂNG THỰC HÀNH
         function renderExercisesSection(exercises) {
             if (!exercises || exercises.length === 0) {
                 return `<section class="exercises-section">
@@ -738,9 +738,17 @@
                         
                         <div class="exercise-skills">
                             <div style="margin: 10px 0; font-weight: 600; color: var(--primary-color);">
-                                <i class="fas fa-tag"></i>
-                                Loại hình: ${exercise.importExport || 'Không xác định'}
+                                <i class="fas fa-list-ul"></i> Kỹ năng đã thực hành:
                             </div>
+                            ${exercise.skills && exercise.skills.length > 0 ? 
+                                exercise.skills.map(skill => `
+                                    <span class="skill-tag">
+                                        <i class="fas fa-check-circle"></i>
+                                        ${skill}
+                                    </span>
+                                `).join('') : 
+                                '<p style="color: var(--text-light); font-style: italic;">Không có kỹ năng nào được gán</p>'
+                            }
                         </div>
                     </div>
                 `;
