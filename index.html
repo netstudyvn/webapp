@@ -227,6 +227,60 @@
             color: var(--text-light);
             line-height: 1.7;
         }
+
+        /* Thêm vào phần CSS hiện có */
+        .import-export-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .badge-export {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .badge-import {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .badge-both {
+            background-color: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ffe0b2;
+        }
+
+        .badge-default {
+            background-color: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .skill-group {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .skill-group i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        .filter-active {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3) !important;
+        }
         
         .exercises-section {
             background-color: white;
@@ -298,6 +352,10 @@
             font-size: 20px;
             color: var(--primary-color);
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .exercise-meta {
@@ -593,7 +651,7 @@
             initializeEventHandlers();
         }
 
-        // Render skills section
+        // Render skills section - ĐÃ CẬP NHẬT
         function renderSkillsSection(skills) {
             if (!skills || skills.length === 0) {
                 return `<section class="skills-section">
@@ -602,18 +660,31 @@
                 </section>`;
             }
             
-            const skillsHtml = skills.map((skill, index) => `
-                <div class="skill-item ${index === 0 ? 'active' : ''}" data-id="${skill.id}" data-name="${skill.name}">
-                    <div class="skill-name">
-                        <div>
-                            <i class="${skill.icon || 'fas fa-cogs'}"></i>
-                            ${skill.name}
+            const skillsHtml = skills.map((skill, index) => {
+                const importExportBadge = getImportExportBadge(skill.group);
+                return `
+                    <div class="skill-item ${index === 0 ? 'active' : ''}" 
+                         data-id="${skill.id}" 
+                         data-name="${skill.name}"
+                         data-group="${skill.group || ''}">
+                        <div class="skill-name">
+                            <div>
+                                <i class="${skill.icon || 'fas fa-cogs'}"></i>
+                                ${skill.name}
+                                ${importExportBadge}
+                            </div>
+                            <span class="skill-count">${skill.exerciseCount || 0} bài</span>
                         </div>
-                        <span class="skill-count">${skill.exerciseCount || 0} bài</span>
+                        ${skill.group ? `
+                            <div class="skill-group">
+                                <i class="fas fa-tag"></i>
+                                Nhóm: ${skill.group}
+                            </div>
+                        ` : ''}
+                        <div class="skill-description">${skill.description || 'Không có mô tả'}</div>
                     </div>
-                    <div class="skill-description">${skill.description || 'Không có mô tả'}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             return `<section class="skills-section">
                 <h2 class="section-title"><i class="fas fa-tools"></i>Kỹ năng thực hành</h2>
@@ -621,7 +692,7 @@
             </section>`;
         }
 
-        // Render exercises section
+        // Render exercises section - ĐÃ CẬP NHẬT
         function renderExercisesSection(exercises) {
             if (!exercises || exercises.length === 0) {
                 return `<section class="exercises-section">
@@ -634,51 +705,57 @@
                 </section>`;
             }
             
-            const exercisesHtml = exercises.map(exercise => `
-                <div class="exercise-card" data-id="${exercise.id}">
-                    <h3 class="exercise-title">${exercise.title || 'Bài tập không tên'}</h3>
-                    <div class="exercise-meta">
-                        <span>
-                            <span class="transport-icon">${getTransportIcon(exercise.transport)}</span>
-                            ${getTransportText(exercise.transport)}
-                        </span>
-                        <span>${exercise.date || "Chưa cập nhật ngày"}</span>
-                    </div>
-                    
-                    <div class="exercise-description-container">
-                        <div class="exercise-description collapsed" id="desc-${exercise.id}">
-                            ${exercise.description ? exercise.description.trim() : "Không có mô tả"}
+            const exercisesHtml = exercises.map(exercise => {
+                const importExportBadge = getImportExportBadge(exercise.importExport);
+                return `
+                    <div class="exercise-card" data-id="${exercise.id}" data-group="${exercise.importExport || ''}">
+                        <h3 class="exercise-title">
+                            ${exercise.title || 'Bài tập không tên'}
+                            ${importExportBadge}
+                        </h3>
+                        <div class="exercise-meta">
+                            <span>
+                                <span class="transport-icon">${getTransportIcon(exercise.transport)}</span>
+                                ${getTransportText(exercise.transport)}
+                            </span>
+                            <span>${exercise.date || "Chưa cập nhật ngày"}</span>
                         </div>
-                        ${exercise.description && exercise.description.length > 150 ? `
-                            <button class="show-more-btn" data-target="desc-${exercise.id}">
-                                <span>Hiển thị thêm</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
+                        
+                        <div class="exercise-description-container">
+                            <div class="exercise-description collapsed" id="desc-${exercise.id}">
+                                ${exercise.description ? exercise.description.trim() : "Không có mô tả"}
+                            </div>
+                            ${exercise.description && exercise.description.length > 150 ? `
+                                <button class="show-more-btn" data-target="desc-${exercise.id}">
+                                    <span>Hiển thị thêm</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        ${exercise.date ? `
+                        <div class="exercise-date">
+                            <i class="far fa-calendar-alt"></i> Ngày hoàn thành: ${exercise.date}
+                        </div>
                         ` : ''}
-                    </div>
-                    
-                    ${exercise.date ? `
-                    <div class="exercise-date">
-                        <i class="far fa-calendar-alt"></i> Ngày hoàn thành: ${exercise.date}
-                    </div>
-                    ` : ''}
-                    
-                    <div class="exercise-skills">
-                        <div style="margin: 10px 0; font-weight: 600; color: var(--primary-color);">
-                            <i class="fas fa-list-ul"></i> Kỹ năng đã thực hành:
+                        
+                        <div class="exercise-skills">
+                            <div style="margin: 10px 0; font-weight: 600; color: var(--primary-color);">
+                                <i class="fas fa-list-ul"></i> Kỹ năng đã thực hành:
+                            </div>
+                            ${exercise.skills && exercise.skills.length > 0 ? 
+                                exercise.skills.map(skill => `
+                                    <span class="skill-tag">
+                                        <i class="fas fa-check-circle"></i>
+                                        ${skill}
+                                    </span>
+                                `).join('') : 
+                                '<p style="color: var(--text-light); font-style: italic;">Không có kỹ năng nào được gán</p>'
+                            }
                         </div>
-                        ${exercise.skills && exercise.skills.length > 0 ? 
-                            exercise.skills.map(skill => `
-                                <span class="skill-tag">
-                                    <i class="fas fa-check-circle"></i>
-                                    ${skill}
-                                </span>
-                            `).join('') : 
-                            '<p style="color: var(--text-light); font-style: italic;">Không có kỹ năng nào được gán</p>'
-                        }
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             return `<section class="exercises-section">
                 <div class="exercises-header">
@@ -726,6 +803,81 @@
             return texts[transport] || 'Không xác định';
         }
 
+        // Hàm helper để hiển thị badge xuất/nhập
+        function getImportExportBadge(group) {
+            if (!group) return '';
+            
+            const groupLower = group.toLowerCase();
+            let badgeClass = '';
+            let badgeText = '';
+            
+            if (groupLower.includes('xuất') && groupLower.includes('nhập')) {
+                badgeClass = 'badge-both';
+                badgeText = 'CẢ HAI';
+            } else if (groupLower.includes('xuất')) {
+                badgeClass = 'badge-export';
+                badgeText = 'XUẤT';
+            } else if (groupLower.includes('nhập')) {
+                badgeClass = 'badge-import';
+                badgeText = 'NHẬP';
+            } else {
+                badgeClass = 'badge-default';
+                badgeText = group.toUpperCase();
+            }
+            
+            return `<span class="import-export-badge ${badgeClass}">${badgeText}</span>`;
+        }
+
+        // Hàm lọc bài tập theo kỹ năng và nhóm - SỬA ĐỔI HOÀN TOÀN
+        function filterExercisesBySkill(skillName, skillGroup) {
+            const exercises = document.querySelectorAll('.exercise-card');
+            const activeTransport = document.querySelector('.filter-btn.active');
+            const activeFilter = activeTransport ? activeTransport.getAttribute('data-filter') : 'all';
+            
+            exercises.forEach(exercise => {
+                const transportElement = exercise.querySelector('.transport-icon');
+                const skills = exercise.querySelectorAll('.skill-tag');
+                const exerciseGroup = exercise.getAttribute('data-group') || '';
+                
+                // KIỂM TRA KỸ NĂNG: So sánh tên kỹ năng trong bài tập với kỹ năng được chọn
+                let hasSkill = false;
+                skills.forEach(skill => {
+                    if (skill.textContent.trim().includes(skillName.trim())) {
+                        hasSkill = true;
+                    }
+                });
+                
+                // KIỂM TRA PHƯƠNG TIỆN VẬN CHUYỂN
+                let shouldShowByTransport = true;
+                if (activeFilter !== 'all' && transportElement) {
+                    const transportIcon = transportElement.textContent.trim();
+                    const transportMap = {
+                        'sea': '⛴',
+                        'air': '✈️',
+                        'road': '🚛'
+                    };
+                    const expectedIcon = transportMap[activeFilter];
+                    shouldShowByTransport = transportIcon === expectedIcon;
+                }
+                
+                // KIỂM TRA NHÓM: So sánh nhóm của kỹ năng với nhóm của bài tập
+                let shouldShowByGroup = true;
+                if (skillGroup && exerciseGroup) {
+                    const skillGroupLower = skillGroup.toLowerCase();
+                    const exerciseGroupLower = exerciseGroup.toLowerCase();
+                    
+                    // Nếu nhóm kỹ năng khớp với nhóm bài tập thì hiển thị
+                    shouldShowByGroup = exerciseGroupLower.includes(skillGroupLower) || 
+                                       skillGroupLower.includes(exerciseGroupLower);
+                }
+                
+                // HIỂN THỊ nếu thỏa mãn cả 3 điều kiện
+                exercise.style.display = (hasSkill && shouldShowByTransport && shouldShowByGroup) ? 'block' : 'none';
+            });
+            
+            updateNoExercisesMessage();
+        }
+
         function showLoading(message = 'Đang tải dữ liệu...') {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
@@ -760,7 +912,7 @@
             }
         }
 
-        // Khởi tạo event handlers
+        // Khởi tạo event handlers - ĐÃ CẬP NHẬT
         function initializeEventHandlers() {
             // Bộ lọc phương tiện vận chuyển
             const filterButtons = document.querySelectorAll('.filter-btn');
@@ -768,11 +920,19 @@
                 button.addEventListener('click', () => {
                     filterButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    filterExercises(button.getAttribute('data-filter'));
+                    
+                    const activeSkill = document.querySelector('.skill-item.active');
+                    if (activeSkill) {
+                        const skillName = activeSkill.getAttribute('data-name');
+                        const skillGroup = activeSkill.getAttribute('data-group');
+                        filterExercisesBySkill(skillName, skillGroup);
+                    } else {
+                        filterExercises(button.getAttribute('data-filter'));
+                    }
                 });
             });
             
-            // Click kỹ năng để lọc bài tập
+            // Click kỹ năng để lọc bài tập - ĐÃ CẬP NHẬT
             const skillItems = document.querySelectorAll('.skill-item');
             skillItems.forEach(item => {
                 item.addEventListener('click', () => {
@@ -781,9 +941,10 @@
                     // Thêm active cho kỹ năng được chọn
                     item.classList.add('active');
                     
-                    // Lọc bài tập theo kỹ năng
+                    // Lọc bài tập theo kỹ năng và nhóm
                     const skillName = item.getAttribute('data-name');
-                    filterExercisesBySkill(skillName);
+                    const skillGroup = item.getAttribute('data-group');
+                    filterExercisesBySkill(skillName, skillGroup);
                 });
             });
             
@@ -812,15 +973,17 @@
             if (skillItems.length > 0) {
                 const firstSkill = skillItems[0];
                 const firstSkillName = firstSkill.getAttribute('data-name');
-                filterExercisesBySkill(firstSkillName);
+                const firstSkillGroup = firstSkill.getAttribute('data-group');
+                filterExercisesBySkill(firstSkillName, firstSkillGroup);
             }
         }
 
-        // Lọc bài tập theo phương tiện vận chuyển
+        // Lọc bài tập theo phương tiện vận chuyển - ĐÃ CẬP NHẬT
         function filterExercises(filter) {
             const exercises = document.querySelectorAll('.exercise-card');
             const activeSkill = document.querySelector('.skill-item.active');
             const activeSkillName = activeSkill ? activeSkill.getAttribute('data-name') : null;
+            const activeSkillGroup = activeSkill ? activeSkill.getAttribute('data-group') : null;
             
             exercises.forEach(exercise => {
                 const transportElement = exercise.querySelector('.transport-icon');
@@ -845,9 +1008,9 @@
                     }
                 }
                 
-                // Kết hợp lọc phương tiện và kỹ năng
+                // Kết hợp lọc phương tiện và kỹ năng/nhóm
                 let shouldShowBySkill = true;
-                if (activeSkillName) {
+                if (activeSkillName && activeSkillGroup) {
                     const skills = exercise.querySelectorAll('.skill-tag');
                     let hasSkill = false;
                     
@@ -856,48 +1019,25 @@
                             hasSkill = true;
                         }
                     });
-                    shouldShowBySkill = hasSkill;
+                    
+                    // Kiểm tra nhóm xuất/nhập
+                    const exerciseGroup = exercise.getAttribute('data-group') || '';
+                    const skillGroupLower = activeSkillGroup.toLowerCase();
+                    const exerciseGroupLower = exerciseGroup.toLowerCase();
+                    
+                    let shouldShowByGroup = true;
+                    if (skillGroupLower && exerciseGroupLower) {
+                        shouldShowByGroup = exerciseGroupLower.includes(skillGroupLower) || 
+                                           skillGroupLower.includes(exerciseGroupLower);
+                    }
+                    
+                    shouldShowBySkill = hasSkill && shouldShowByGroup;
                 }
                 
                 exercise.style.display = (shouldShowByTransport && shouldShowBySkill) ? 'block' : 'none';
             });
             
             // Cập nhật thông báo nếu cần
-            updateNoExercisesMessage();
-        }
-
-        // Lọc bài tập theo kỹ năng
-        function filterExercisesBySkill(skillName) {
-            const exercises = document.querySelectorAll('.exercise-card');
-            const activeTransport = document.querySelector('.filter-btn.active');
-            const activeFilter = activeTransport ? activeTransport.getAttribute('data-filter') : 'all';
-            
-            exercises.forEach(exercise => {
-                const transportElement = exercise.querySelector('.transport-icon');
-                const skills = exercise.querySelectorAll('.skill-tag');
-                
-                let hasSkill = false;
-                skills.forEach(skill => {
-                    if (skill.textContent.includes(skillName)) {
-                        hasSkill = true;
-                    }
-                });
-                
-                let shouldShowByTransport = true;
-                if (activeFilter !== 'all' && transportElement) {
-                    const transportIcon = transportElement.textContent.trim();
-                    const transportMap = {
-                        'sea': '⛴',
-                        'air': '✈️',
-                        'road': '🚛'
-                    };
-                    const expectedIcon = transportMap[activeFilter];
-                    shouldShowByTransport = transportIcon === expectedIcon;
-                }
-                
-                exercise.style.display = (hasSkill && shouldShowByTransport) ? 'block' : 'none';
-            });
-            
             updateNoExercisesMessage();
         }
 
